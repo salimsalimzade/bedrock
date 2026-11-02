@@ -14,11 +14,26 @@
   color: var(--yosegi-color-fg-muted);
 }
 
+/* The field's label, box and error message become this grid's three rows (subgrid), so the
+   button sits in the box's row and doesn't move when an error message appears below. */
 .page-form {
-  display: flex;
-  align-items: flex-end;
-  gap: var(--yosegi-space-300);
-  width: 100%;
+  display: grid;
+  grid-template-columns: auto auto;
+  justify-content: start;
+  column-gap: var(--yosegi-space-300);
+}
+
+.page-form-field {
+  grid-row: span 3;
+  display: grid;
+  grid-template-rows: subgrid;
+}
+
+/* Centered: the subgrid folds the field's row gap into the box's row, so the row is taller than the box. */
+.page-form-action {
+  grid-column: 2;
+  grid-row: 2;
+  align-self: center;
 }
 
 .stat-list {

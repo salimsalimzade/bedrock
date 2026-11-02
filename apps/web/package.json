@@ -9,6 +9,7 @@
     "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.node.json"
   },
   "dependencies": {
+    "@bedrock/schemas": "workspace:*",
     "@bedrock/types": "workspace:*",
     "@bedrock/ui": "workspace:*",
     "@bedrock/utils": "workspace:*",
@@ -16,6 +17,7 @@
     "@solidjs/web": "2.0.0-rc.20",
     "hono": "4.13.16",
     "solid-js": "2.0.0-rc.20",
+    "valibot": "1.5.0",
     "yosegi-solid": "0.5.1"
   },
   "devDependencies": {

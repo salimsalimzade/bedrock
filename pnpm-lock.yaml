@@ -32,6 +32,9 @@ importers:
 
   apps/server:
     dependencies:
+      '@bedrock/schemas':
+        specifier: workspace:*
+        version: link:../../shared/schemas
       '@bedrock/types':
         specifier: workspace:*
         version: link:../../shared/types
@@ -41,9 +44,15 @@ importers:
       '@hono/node-server':
         specifier: 2.1.5
         version: 2.1.5(hono@4.13.16)
+      '@hono/valibot-validator':
+        specifier: 0.6.2
+        version: 0.6.2(hono@4.13.16)(valibot@1.5.0(typescript@7.0.2))
       hono:
         specifier: 4.13.16
         version: 4.13.16
+      valibot:
+        specifier: 1.5.0
+        version: 1.5.0(typescript@7.0.2)
     devDependencies:
       tsdown:
         specifier: 0.23.4
@@ -57,6 +66,9 @@ importers:
 
   apps/web:
     dependencies:
+      '@bedrock/schemas':
+        specifier: workspace:*
+        version: link:../../shared/schemas
       '@bedrock/types':
         specifier: workspace:*
         version: link:../../shared/types
@@ -78,6 +90,9 @@ importers:
       solid-js:
         specifier: 2.0.0-rc.20
         version: 2.0.0-rc.20
+      valibot:
+        specifier: 1.5.0
+        version: 1.5.0(typescript@7.0.2)
       yosegi-solid:
         specifier: 0.5.1
         version: 0.5.1(@solidjs/web@2.0.0-rc.20(solid-js@2.0.0-rc.20))(solid-js@2.0.0-rc.20)
@@ -91,6 +106,12 @@ importers:
       vite:
         specifier: 8.3.5
         version: 8.3.5(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15)
+
+  shared/schemas:
+    dependencies:
+      valibot:
+        specifier: 1.5.0
+        version: 1.5.0(typescript@7.0.2)
 
   shared/types: {}
 
@@ -528,6 +549,12 @@ packages:
     engines: {node: '>=20'}
     peerDependencies:
       hono: ^4 || ^5.0.0-0
+
+  '@hono/valibot-validator@0.6.2':
+    resolution: {integrity: sha512-glBQW4okjgX4iabeaQXqwa79aGuZovxHMZTuWyCnoWyWH6v0z06OKnwvnHygZaIEeOgtXB29aCzIqQTUhU5yvg==}
+    peerDependencies:
+      hono: '>=3.9.0'
+      valibot: ^1.0.0 || ^1.0.0-beta.4 || ^1.0.0-rc
 
   '@jridgewell/gen-mapping@0.3.13':
     resolution: {integrity: sha512-2kkt/7niJ6MgEPxF0bYdQ6etZaA+fQvDcLKckhy1yIQOzaoKjBBjSj63/aLVjYE3qhRt5dvM+uUyfCg6UKCBbA==}
@@ -1602,6 +1629,14 @@ packages:
     peerDependencies:
       browserslist: '>= 4.21.0'
 
+  valibot@1.5.0:
+    resolution: {integrity: sha512-nil6AkP2TChWL43Z5uJ6GTxX01CUA+g8LWUM+N/rB9NBbkUMaUsi9PUNzlUPgoKASgmx9f7eGOYpJ04/fSa6FQ==}
+    peerDependencies:
+      typescript: '>=5'
+    peerDependenciesMeta:
+      typescript:
+        optional: true
+
   verkit@0.5.0:
     resolution: {integrity: sha512-u4J1hr6Y+C/hit34GwL3eIcUf3wngT8TlYUjK7tk0jxydKLAq3sYvifjdTDA6U3KCKRcQCQDGf/srjxfZF3l7g==}
     engines: {node: '>=18.12.0'}
@@ -2130,6 +2165,11 @@ snapshots:
   '@hono/node-server@2.1.5(hono@4.13.16)':
     dependencies:
       hono: 4.13.16
+
+  '@hono/valibot-validator@0.6.2(hono@4.13.16)(valibot@1.5.0(typescript@7.0.2))':
+    dependencies:
+      hono: 4.13.16
+      valibot: 1.5.0(typescript@7.0.2)
 
   '@jridgewell/gen-mapping@0.3.13':
     dependencies:
@@ -2964,6 +3004,10 @@ snapshots:
       browserslist: 4.29.5
       escalade: 3.2.0
       picocolors: 1.1.1
+
+  valibot@1.5.0(typescript@7.0.2):
+    optionalDependencies:
+      typescript: 7.0.2
 
   verkit@0.5.0: {}
 

@@ -10,7 +10,7 @@
     "prepare": "lefthook install",
     "dev": "turbo run dev",
     "build": "turbo run build",
-    "typecheck": "turbo run typecheck",
+    "typecheck": "turbo run typecheck && tsc --noEmit -p scripts",
     "test": "turbo run test",
     "lint": "biome lint --error-on-warnings .",
     "format": "biome format --write .",

@@ -7,7 +7,7 @@ The template every new web app starts from: a pnpm + Turborepo monorepo with a S
 - **pnpm workspaces** (`apps/*`, `shared/*`) and **Turborepo** for tasks (`build`, `dev`, `typecheck`, `test`).
 - **apps/web**: SolidJS 2 (RC), `@solidjs/router` 2 (next), Vite with `@solidjs/vite-plugin`, and `yosegi-solid` for all UI.
 - **apps/server**: Hono on Node via `@hono/node-server`; `tsx watch` in dev, bundled with `tsdown` for production. Tests with Vitest.
-- **shared/types** (`@bedrock/types`), **shared/utils** (`@bedrock/utils`) and **shared/ui** (`@bedrock/ui`, Solid components): internal TypeScript-source packages, no build step.
+- **shared/types** (`@bedrock/types`), **shared/schemas** (`@bedrock/schemas`, Valibot), **shared/utils** (`@bedrock/utils`) and **shared/ui** (`@bedrock/ui`, Solid components): internal TypeScript-source packages, no build step.
 - **Biome** for formatting and linting, **Lefthook** for git hooks, **commitlint** for commit messages.
 - **Docker Compose**: `docker-compose.yml` runs the apps. Third-party services (postgres, redis, kafka, …) go in `infra/`, one file each; it's empty for now, see the Infra section of `README.md`.
 
@@ -68,6 +68,8 @@ The router is `@solidjs/router` 2: routes are config objects passed to `createRo
 - **Chain every route** (`new Hono().get(...).post(...)`, `.route(...)`) so `AppType` keeps its types; separate `app.get(...)` statements produce an untyped client.
 - The web app calls the server only through the typed client in `apps/web/src/lib/api-client.ts` (`hc<AppType>`). Add one small function per endpoint there and use `parseResponse`. Never call `fetch("/api/...")` directly.
 - Error responses use the shared `ApiError` shape (`{ error: string }`); `getErrorMessage` turns them into readable text.
+- Validate every input (`param`, `query`, `json`, `form`) with a Valibot schema from `@bedrock/schemas` through `validate(target, schema)` in `apps/server/src/lib/validate.ts`, then read it with `c.req.valid(target)`. A failed check answers 400 with the first issue's message as `ApiError`. Forms in the web app check input with the same schema (`v.safeParse`), as `greetings-page.tsx` does, so both sides reject the same things.
+- Annotate error bodies (`const error: ApiError = …; return c.json(error, 400)`) instead of `c.json<ApiError>(…, 400)`: an explicit type argument stops Hono inferring the status, and the error then leaks into the typed client's success type.
 - Keep `apps/server/src/app.ts` and its routes free of Node-only code; the web app typechecks them. Node specifics (`process.env`, `serve`, database or queue clients) belong in `apps/server/src/index.ts`.
 
 ## Databases and other services
@@ -88,7 +90,7 @@ There are none yet. When a route needs one (postgres, redis, kafka, …):
 
 ## Shared packages
 
-- Types used on both sides go in `shared/types`, and pure helpers in `shared/utils`. One concept per file, re-exported from `src/index.ts`. Both must run in the browser and in Node: no DOM and no Node APIs.
+- Types used on both sides go in `shared/types`, Valibot schemas for API inputs in `shared/schemas` (`greetingParamsSchema` in `greeting-params.ts`, with its type from `v.InferOutput`), and pure helpers in `shared/utils`. One concept per file, re-exported from `src/index.ts`. All three must run in the browser and in Node: no DOM and no Node APIs.
 - `shared/ui` is browser-only Solid code. Put each component in its own folder: `src/<name>/<name>.tsx`, plus `src/<name>/<name>.module.css` if it needs styles. Export it from `src/index.ts`.
   - Build components on yosegi-solid and style them with yosegi tokens.
   - Keep them free of app concerns: no API client, router or app state. Pass data in as props, e.g. `LoadError` takes a `description` string, and the page turns the error into text with `getErrorMessage`.

@@ -10,6 +10,7 @@ apps/
   server/     hono on node + vitest                             (Dockerfile)
 shared/
   types/      @bedrock/types
+  schemas/    @bedrock/schemas  (valibot schemas shared by server and web)
   utils/      @bedrock/utils
   ui/         @bedrock/ui  (shared solid components)
 infra/        third-party services (postgres, redis, kafka, …), one compose file each; empty for now
@@ -79,4 +80,4 @@ Read the connection URL from `process.env` in `apps/server/src/index.ts` only, a
 
 ## Conventions
 
-The conventions live in [.claude/CLAUDE.md](.claude/CLAUDE.md): kebab-case file names, yosegi-solid for UI, typed Hono RPC calls, repositories for database access, and lowercase commits such as `feature(web): add settings page`.
+The conventions live in [.claude/CLAUDE.md](.claude/CLAUDE.md): kebab-case file names, yosegi-solid for UI, typed Hono RPC calls, Valibot validation, repositories for database access, and lowercase commits such as `feature(web): add settings page`.

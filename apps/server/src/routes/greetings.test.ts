@@ -15,6 +15,11 @@ describe("GET /api/greetings/:name", () => {
     });
   });
 
+  it("trims the name", async () => {
+    const response = await client.api.greetings[":name"].$get({ param: { name: "  ada" } });
+    expect(await response.json()).toMatchObject({ message: "Hello, Ada!" });
+  });
+
   it("returns 400 for a name over 40 characters", async () => {
     const response = await client.api.greetings[":name"].$get({ param: { name: "a".repeat(41) } });
     expect(response.status).toBe(400);
