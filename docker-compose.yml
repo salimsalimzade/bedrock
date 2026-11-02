@@ -1,0 +1,37 @@
+# docker compose up --build   → web on http://localhost:8080, server on http://localhost:3000
+name: bedrock
+
+# Third-party services live in infra/, one file each. Add a new one here.
+include:
+  - infra/postgres.yml
+
+services:
+  server:
+    build:
+      context: .
+      dockerfile: apps/server/Dockerfile
+    environment:
+      PORT: 3000
+      DATABASE_URL: postgres://${POSTGRES_USER:-bedrock}:${POSTGRES_PASSWORD:-bedrock}@postgres:5432/${POSTGRES_DB:-bedrock}
+    ports:
+      - "3000:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/api/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    ports:
+      - "8080:80"
+    depends_on:
+      server:
+        condition: service_healthy
+    restart: unless-stopped
