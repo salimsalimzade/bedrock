@@ -18,8 +18,7 @@
     "@bedrock/types": "workspace:*",
     "@bedrock/utils": "workspace:*",
     "@hono/node-server": "2.1.5",
-    "hono": "4.13.16",
-    "postgres": "4.0.0"
+    "hono": "4.13.16"
   },
   "devDependencies": {
     "tsdown": "0.23.4",

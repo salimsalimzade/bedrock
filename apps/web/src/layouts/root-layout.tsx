@@ -14,7 +14,6 @@ export function RootLayout(props: ParentProps) {
         <nav class={styles["app-nav"]}>
           <a href={paths()}>Health</a>
           <a href={paths.greetings}>Greetings</a>
-          <a href={paths.users}>Users</a>
         </nav>
       </header>
       <main class={styles["app-main"]}>

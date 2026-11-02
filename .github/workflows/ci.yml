@@ -1,10 +1,10 @@
-# CI: the same checks as the git hooks and CLAUDE.md, plus the Docker images.
+# CI: lint, typecheck and build. Commit messages and file names are checked
+# only locally, by the Lefthook hooks.
 #
 # Adding CD later: create .github/workflows/deploy.yml that runs on push to main,
 # calls this workflow first (`jobs.ci.uses: ./.github/workflows/ci.yml`) and
 # deploys in a job that `needs: ci`. Then remove the `push` trigger below so CI
-# doesn't run twice per push. The docker job shares its build cache with deploy
-# through the per-app `scope`, so deploy rebuilds warm and only adds `push: true`.
+# doesn't run twice per push.
 name: CI
 
 on:
@@ -26,14 +26,21 @@ concurrency:
 jobs:
   check:
     name: Lint, typecheck and build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v7
 
-      - uses: ./.github/actions/setup
+      # No version input: it reads packageManager from package.json.
+      - uses: pnpm/action-setup@v6
 
-      # Commit messages and file names are checked only locally, by the Lefthook hooks.
-      - name: Biome
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Lint
         run: pnpm exec biome ci --error-on-warnings .
 
       - name: Typecheck

@@ -1,7 +1,7 @@
 import { existsSync } from "node:fs";
 import { defineConfig } from "vitest/config";
 
-// Tests read the same .env as `pnpm dev`, so DATABASE_URL points at the compose postgres.
+// Tests read the same .env as `pnpm dev`.
 if (existsSync(".env")) {
   process.loadEnvFile(".env");
 }

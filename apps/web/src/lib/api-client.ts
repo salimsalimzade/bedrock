@@ -13,10 +13,6 @@ export function fetchGreeting(name: string) {
   return parseResponse(client.api.greetings[":name"].$get({ param: { name } }));
 }
 
-export function fetchUsers() {
-  return parseResponse(client.api.users.$get());
-}
-
 /** The server's ApiError message when there is one, otherwise the error's own message. */
 export function getErrorMessage(error: unknown): string {
   if (error instanceof DetailedError) {

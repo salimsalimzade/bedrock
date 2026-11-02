@@ -15,10 +15,7 @@
     "lint": "biome lint --error-on-warnings .",
     "format": "biome format --write .",
     "check": "biome check --error-on-warnings .",
-    "check:fix": "biome check --write .",
-    "db:up": "docker compose up --detach --wait postgres",
-    "db:down": "docker compose stop postgres",
-    "db:reset": "docker compose down --volumes postgres && docker compose up --detach --wait postgres"
+    "check:fix": "biome check --write ."
   },
   "devDependencies": {
     "@biomejs/biome": "2.6.4",
