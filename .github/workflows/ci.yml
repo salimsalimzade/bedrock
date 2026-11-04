@@ -1,4 +1,4 @@
-# CI: lint, typecheck and build. Commit messages and file names are checked
+# CI: lint, typecheck, test and build. Commit messages and file names are checked
 # only locally, by the Lefthook hooks.
 #
 # Adding CD later: create .github/workflows/deploy.yml that runs on push to main,
@@ -25,7 +25,7 @@ concurrency:
 
 jobs:
   check:
-    name: Lint, typecheck and build
+    name: Lint, typecheck, test and build
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v7
@@ -45,6 +45,9 @@ jobs:
 
       - name: Typecheck
         run: pnpm typecheck
+
+      - name: Test
+        run: pnpm test
 
       - name: Build
         run: pnpm build

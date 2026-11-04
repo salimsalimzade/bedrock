@@ -9,7 +9,8 @@ The template every new web app starts from: a pnpm + Turborepo monorepo with a S
 - **apps/server**: Hono on Node via `@hono/node-server`; `tsx watch` in dev, bundled with `tsdown` for production. Tests with Vitest.
 - **shared/types** (`@bedrock/types`), **shared/schemas** (`@bedrock/schemas`, Valibot), **shared/utils** (`@bedrock/utils`) and **shared/ui** (`@bedrock/ui`, Solid components): internal TypeScript-source packages, no build step.
 - **Biome** for formatting and linting, **Lefthook** for git hooks, **commitlint** for commit messages.
-- **Docker Compose**: `docker-compose.yml` runs the apps. Third-party services (postgres, redis, kafka, …) go in `infra/`, one file each; it's empty for now, see the Infra section of `README.md`.
+- **Turborepo caching**: shared packages have no build step, so `turbo.json` has a script-less `transit` task (`dependsOn: ["^transit"]`) that `typecheck` and `build` depend on. It puts every workspace dependency's files into the task hash; without it, editing `shared/*` or `apps/server` leaves the web app's cached typecheck and build stale. Keep it.
+- **Docker Compose**: `docker-compose.yml` runs the apps. Third-party services (postgres, redis, kafka, …) go in `infra/`, one file each; it's empty for now. "Adding a service" in `README.md` walks through adding one and connecting it to the server and the web app.
 
 ## Commands
 
@@ -70,14 +71,21 @@ The router is `@solidjs/router` 2: routes are config objects passed to `createRo
 - Error responses use the shared `ApiError` shape (`{ error: string }`); `getErrorMessage` turns them into readable text.
 - Validate every input (`param`, `query`, `json`, `form`) with a Valibot schema from `@bedrock/schemas` through `validate(target, schema)` in `apps/server/src/lib/validate.ts`, then read it with `c.req.valid(target)`. A failed check answers 400 with the first issue's message as `ApiError`. Forms in the web app check input with the same schema (`v.safeParse`), as `greetings-page.tsx` does, so both sides reject the same things.
 - Annotate error bodies (`const error: ApiError = …; return c.json(error, 400)`) instead of `c.json<ApiError>(…, 400)`: an explicit type argument stops Hono inferring the status, and the error then leaks into the typed client's success type.
-- Keep `apps/server/src/app.ts` and its routes free of Node-only code; the web app typechecks them. Node specifics (`process.env`, `serve`, database or queue clients) belong in `apps/server/src/index.ts`.
+- Keep `apps/server/src/app.ts` and its routes free of Node-only code; the web app typechecks them. Node specifics belong outside that graph: `serve` and wiring in `index.ts`, environment parsing in `env.ts`, service clients in `db/` (or `cache/`, `queue/`, …). Not even `import type` from those in a route or in `app.ts`.
+
+## Environment variables
+
+- `apps/server/src/env.ts` parses `process.env` with a Valibot schema once at startup and exits with a readable list of problems. Read config from its result, never from `process.env` elsewhere.
+- A new variable goes in four places: the schema in `env.ts`, `apps/server/.env.example`, the server's `environment` in `docker-compose.yml`, and `passThroughEnv` of the `dev` task in `turbo.json`. Turborepo runs tasks in strict env mode and drops any variable it isn't told about, so `FOO=bar pnpm dev` would silently ignore it.
 
 ## Databases and other services
 
-There are none yet. When a route needs one (postgres, redis, kafka, …):
+There are none yet. When a route needs one (postgres, redis, kafka, …), follow "Adding a service" in `README.md`; it walks through Postgres end to end. The rules:
 
-- Run the service from `infra/<service>.yml`; the Infra section of `README.md` has the steps.
-- Routes never import the client. Each route declares the interface it needs (e.g. `UsersRepository` in `routes/users.ts`), a file such as `db/users-repository.ts` implements it, and `index.ts` creates the client and passes the implementation into `createApp(deps)`. That keeps drivers out of the web app's type graph and lets tests pass in whatever they need.
+- Run the service from `infra/<service>.yml`, included from `docker-compose.yml`.
+- The web app never talks to a service. It calls a server route through the typed client, and the route talks to the service.
+- Routes never import the client. Each route declares the interface it needs (e.g. `UsersRepository` in `routes/users.ts`), a file such as `db/users-repository.ts` implements it, and `index.ts` creates the client and passes the implementation into `createApp(deps)`, typed by an `AppDeps` interface in `app.ts`. That keeps drivers out of the web app's type graph and lets tests pass in whatever they need.
+- Route tests pass an in-memory fake of the interface, so `pnpm test` and CI need no running service. Test the real implementation separately, against the service.
 - Convert rows to the shared types before returning them, e.g. `Date` → ISO string.
 - With SQL, use the driver's tagged templates (`` db`select … where id = ${id}` ``), never string concatenation.
 
@@ -112,7 +120,7 @@ docker-compose.yml        the apps + include: [infra/*.yml]
 
 ## CI
 
-`.github/workflows/ci.yml` runs one job on pull requests and pushes to `main`: lint (`biome ci`), `pnpm typecheck` and `pnpm build`, on a pinned `ubuntu-24.04` runner. Commit messages and file names are checked only locally, by the Lefthook hooks.
+`.github/workflows/ci.yml` runs one job on pull requests and pushes to `main`: lint (`biome ci`), `pnpm typecheck`, `pnpm test` and `pnpm build`, on a pinned `ubuntu-24.04` runner. Commit messages and file names are checked only locally, by the Lefthook hooks.
 
 There's no CD yet. It will go in `.github/workflows/deploy.yml`, which calls `ci.yml` (it has a `workflow_call` trigger) before deploying. The comment at the top of `ci.yml` covers the details.
 
